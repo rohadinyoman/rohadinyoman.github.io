@@ -1,0 +1,161 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Agama extends CI_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('Agama_model');
+        $this->load->library('form_validation');
+        $this->load->library('ion_auth');
+
+        if (!$this->ion_auth->logged_in())
+        {
+            // redirect them to the login page
+            redirect('auth/login', 'refresh');
+        }
+    }
+
+    public function index()
+    {
+        $agama = $this->Agama_model->get_all();
+
+        $data = array(
+            'judul_halaman' => 'Data Agama',
+            'agama_data'    => $agama
+        );
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('agama_list_view', $data);
+        $this->load->view('templates/footer', $data);
+    }
+
+    public function create() 
+    {
+        $data = array(
+            'judul_halaman' => 'Tambah Data Agama',
+            'button'        => 'Create',
+            'action'        => site_url('agama/create_action'),
+    	    'id'            => set_value('id'),
+    	    'agama'         => set_value('agama')
+        );
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('agama_form_view', $data);
+        $this->load->view('templates/footer', $data);
+    }
+    
+    public function create_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->create();
+        } else {
+            $data = array(
+                'agama' => $this->input->post('agama',TRUE)
+            );
+
+            $this->Agama_model->insert($data);
+            $this->session->set_flashdata(
+                'message', 
+                '<div class="alert alert-success" role="alert">
+                    Data Agama Berhasil <b>Ditambahkan</b>
+                </div>'
+            );
+            redirect(site_url('agama'));
+        }
+    }
+    
+    public function update($id) 
+    {
+        $row = $this->Agama_model->get_by_id($id);
+
+        if ($row) {
+            $data = array(
+                'judul_halaman' => 'Ubah Data Agama',
+                'button'        => 'Update',
+                'action'        => site_url('agama/update_action'),
+        		'id'            => set_value('id', $row->id),
+        		'agama'         => set_value('agama', $row->agama),
+        	    );
+            $this->load->view('templates/header', $data);
+            $this->load->view('templates/sidebar', $data);
+            $this->load->view('agama_form_view', $data);
+            $this->load->view('templates/footer', $data);
+        } else {
+            $this->session->set_flashdata(
+                'message', 
+                '<div class="alert alert-danger" role="alert">
+                    Data <b>Tidak Ditemukan</b>
+                </div>'
+            );
+            redirect(site_url('agama'));
+        }
+    }
+    
+    public function update_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->update($this->input->post('id', TRUE));
+        } else {
+            $data = array(
+                'agama' => $this->input->post('Agama',TRUE)
+            );
+
+            $this->Agama_model->update($this->input->post('id', TRUE), $data);
+            $this->session->set_flashdata(
+                'message', 
+                '<div class="alert alert-success" role="alert">
+                    Data Agama Berhasil <b>Diperbarui</b>
+                </div>'
+            );
+            redirect(site_url('agama'));
+        }
+    }
+    
+    public function delete($id) 
+    {
+        $row = $this->Agama_model->get_by_id($id);
+
+        if ($row) {
+            $this->Agama_model->delete($id);
+            $this->session->set_flashdata(
+                'message', 
+                '<div class="alert alert-success" role="alert">
+                    Data Agama Berhasil <b>Dihapus</b>
+                </div>'
+            );
+            redirect(site_url('agama'));
+        } else {
+            $this->session->set_flashdata(
+                'message', 
+                '<div class="alert alert-success" role="alert">
+                    Data <b>Tidak Ditemukan</b>
+                </div>'
+            );
+            redirect(site_url('agama'));
+        }
+    }
+
+    public function _rules() 
+    {
+	$this->form_validation->set_rules('agama', 'agama', 'trim|required');
+
+	$this->form_validation->set_rules('id', 'id', 'trim');
+	$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+    }
+
+}
+
+/* End of file Agama.php */
+/* Location: ./application/controllers/Agama.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2019-06-01 18:22:42 */
+/* http://harviacode.com */
